@@ -1,18 +1,17 @@
 import requests
 from bs4 import BeautifulSoup
 from pymongo import MongoClient
-from time import sleep
 
 # ========== MongoDB Configuration ==========
 MONGO_URI = "mongodb://localhost:27017/"
-DB_NAME = "test"  # 🔁 Replace with your DB name
-COLLECTION_NAME = "courses"  # 🔁 Replace with your collection name
+DB_NAME = "test"  # Replace with your DB name
+COLLECTION_NAME = "courses"  # Replace with your collection name
 
 client = MongoClient(MONGO_URI)
 db = client[DB_NAME]
 collection = db[COLLECTION_NAME]
 
-# ========== Expiry Check Function ==========
+# ========== Check if Course is Expired ==========
 def is_course_expired(url):
     try:
         headers = {
@@ -23,29 +22,26 @@ def is_course_expired(url):
         soup = BeautifulSoup(response.text, "html.parser")
 
         red_message = soup.find("div", class_="ui red message")
-        if red_message:
-            print("[FOUND] Red message detected:", red_message.text.strip())
-            if "Sorry guys" in red_message.text or "Sorry Guys" in red_message.text:
-                print("✅ Course is EXPIRED.")
-                return True
-
-        if "Sorry guys" in soup.get_text() or "Sorry Guys" in soup.get_text():
-            print("[FALLBACK] 'Sorry guys' found in page body.")
-            print("✅ Course is EXPIRED.")
+        if red_message and ("Sorry guys" in red_message.text or "Sorry Guys" in red_message.text):
+            print(f"🟥 Course expired (red message): {url}")
             return True
 
-        print("[OK] Course is still valid.")
+        if "Sorry guys" in soup.get_text() or "Sorry Guys" in soup.get_text():
+            print(f"🟥 Course expired (fallback text): {url}")
+            return True
+
+        print(f"✅ Course still valid: {url}")
         return False
 
     except Exception as e:
-        print("[ERROR] Failed to fetch page:", e)
+        print(f"[ERROR] Could not fetch {url}: {e}")
         return False
 
-# ========== Main Cleanup Function ==========
+# ========== Mark Expired Courses in DB ==========
 def clean_expired_courses():
-    print("[INFO] Checking for expired courses...")
+    print("🔎 Starting expired course check...")
     total = 0
-    removed = 0
+    expired_count = 0
 
     for course in collection.find():
         total += 1
@@ -53,19 +49,17 @@ def clean_expired_courses():
         if not url:
             continue
 
-        print(f"\n🔍 Checking: {url}")
+        print(f"\n→ Checking course: {url}")
         if is_course_expired(url):
-            collection.delete_one({"_id": course["_id"]})
-            print(f"🗑️ Removed expired course from DB: {url}")
-            removed += 1
-        else:
-            print("✅ Course is valid.")
+            collection.update_one(
+                {"_id": course["_id"]},
+                {"$set": {"expired": True}}
+            )
+            print("🗑️ Marked as expired in database.")
+            expired_count += 1
 
-    print(f"\n✅ DONE: Checked {total} courses. Removed {removed} expired.\n")
+    print(f"\n✅ Finished: {total} courses checked, {expired_count} marked as expired.")
 
-# ========== Run Periodically ==========
+# ========== Entry Point ==========
 if __name__ == "__main__":
-    while True:
-        clean_expired_courses()
-        print("[WAIT] Sleeping for 1 hours...\n")
-        sleep(45 * 60)
+    clean_expired_courses()
