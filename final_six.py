@@ -19,6 +19,13 @@ def run_continuously():
         #importlib.reload(importlib.import_module('five'))
 
         print("Completed one cycle. Waiting for next cycle...")
-        time.sleep(300)  # Wait for 6 minutes before repeating
+        time.sleep(1800)  # 5 minutes
+        
+        #print("Running module four (cleaning expired courses)...")
+        #importlib.reload(importlib.import_module('clean_expired'))
+
+        #print("✅ Completed one cleaning. Waiting for next cycle...")
+        #time.sleep(3600)  # 5 minutes
+
 
 run_continuously()

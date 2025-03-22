@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 from pymongo import MongoClient
 
 # Connect to MongoDB
-client = MongoClient("mongodb+srv://yaswitha:Microtek123%40@cluster0.m06cm.mongodb.net/")
+client = MongoClient("mongodb://localhost:27017")
 db = client["test"]
 collection = db["courses"]
 

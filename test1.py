@@ -4,7 +4,7 @@ from pymongo import MongoClient
 import time, datetime
 
 # MongoDB setup
-client = MongoClient('mongodb+srv://yaswitha:Microtek123%40@cluster0.m06cm.mongodb.net/')  # Connect to MongoDB
+client = MongoClient('mongodb://localhost:27017')  # Connect to MongoDB
 db = client['test']  # Database name
 collection = db['courses']  # Collection name
 
