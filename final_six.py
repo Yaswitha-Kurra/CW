@@ -1,6 +1,7 @@
 import time
 import importlib
 
+
 def run_continuously():
     while True:
         print("Running module one (fetching courses)...")
@@ -12,8 +13,9 @@ def run_continuously():
         print("Running module three (scraping UI segment links)...")
         importlib.reload(importlib.import_module('CW3'))
 
-        #print("Running module four (filtering non-English courses)...")
-        #importlib.reload(importlib.import_module('four'))
+        print("Running module four (filtering non-English courses)...")
+        import four
+        four.remove_non_english_courses()
 
         #print("Running module five (checking new courses)...")
         #importlib.reload(importlib.import_module('five'))
@@ -21,7 +23,7 @@ def run_continuously():
         print("Completed one cycle. Waiting for next cycle...")
         time.sleep(120)  # 5 minutes
         
-        print("Running module four (cleaning expired courses)...")
+        print("Running module five (cleaning expired courses)...")
         clean_expired = importlib.import_module('clean_expired')
         clean_expired.clean_expired_courses()
 
